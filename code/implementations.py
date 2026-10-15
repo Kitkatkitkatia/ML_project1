@@ -1,5 +1,5 @@
 from costs import *
-from helpers import *
+from helpers import batch_iter
 
 ################ gradient #####################################
 
