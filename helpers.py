@@ -12,7 +12,7 @@ def load_csv_data(data_path, sub_sample=False):
 
     Args:
         data_path (str): datafolder path
-        sub_sample (bool, optional): If True the data will be subsempled. Default to False.
+        sub_sample (bool, optional): If True the data will be subsâmpled. Default to False.
 
     Returns:
         x_train (np.array): training data
