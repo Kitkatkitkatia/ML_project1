@@ -1,7 +1,7 @@
-from costs import *
-from helpers import batch_iter
+from Code.costs import *
+from Code.helpers import batch_iter
 
-################ gradient #####################################
+################ Gradient #####################################
 
 def compute_gradient(y, tx, w):
     """Computes the gradient at w.
@@ -53,7 +53,7 @@ def mean_squared_error_gd(y, tx, initial_w, max_iters, gamma):
             )
         )
 
-    return losses, ws
+    return w, loss
 
 ################# Stochastic Gradient Descent ##################################
 
@@ -83,7 +83,7 @@ def stochastic_gradient_descent(y, tx, initial_w, batch_size, max_iters, gamma):
             y, tx, batch_size=batch_size, num_batches=1
         ):
             # compute a stochastic gradient and loss
-            grad, _ = compute_gradient(y_batch, tx_batch, w)
+            grad = compute_gradient(y_batch, tx_batch, w)
             w = w - gamma * grad
 
             loss = compute_loss(y, tx, w, "mse")
@@ -91,10 +91,60 @@ def stochastic_gradient_descent(y, tx, initial_w, batch_size, max_iters, gamma):
             ws.append(w)
             losses.append(loss)
 
-
         print(
-            "SGD iter. {bi}/{ti}: loss={l}, w0={w0}, w1={w1}".format(
-                bi=n_iter, ti=max_iters - 1, l=loss, w0=w[0], w1=w[1]
+            "SGD iter. {bi}/{ti}: loss={l}, norm_w ={norm_w}".format(
+                bi=n_iter, ti=max_iters - 1, l=loss, norm_w = np.linalg.norm(w)
             )
         )
-    return losses, ws
+    return w, loss
+
+################ Least Squares #############################
+
+def least_squares(y, tx):
+    """Calculate the least squares solution.
+       returns mse, and optimal weights.
+
+    Args:
+        y: numpy array of shape (N,), N is the number of samples.
+        tx: numpy array of shape (N,D), D is the number of features.
+
+    Returns:
+        w: optimal weights, numpy array of shape(D,), D is the number of features.
+        mse: scalar.
+
+    >>> least_squares(np.array([0.1,0.2]), np.array([[2.3, 3.2], [1., 0.1]]))
+    (array([ 0.21212121, -0.12121212]), 8.666684749742561e-33)
+    """
+    w = np.linalg.solve(tx.T @ tx, tx.T @ y)
+    return w, compute_loss(y, tx, w, "mse")
+
+################### Ridge Regression ########################
+
+def ridge_regression(y, tx, lambda_):
+    """implement ridge regression.
+
+    Args:
+        y: numpy array of shape (N,), N is the number of samples.
+        tx: numpy array of shape (N,D), D is the number of features.
+        lambda_: scalar.
+
+    Returns:
+        w: optimal weights, numpy array of shape(D,), D is the number of features.
+
+    >>> ridge_regression(np.array([0.1,0.2]), np.array([[2.3, 3.2], [1., 0.1]]), 0)
+    array([ 0.21212121, -0.12121212])
+    >>> ridge_regression(np.array([0.1,0.2]), np.array([[2.3, 3.2], [1., 0.1]]), 1)
+    array([0.03947092, 0.00319628])
+    """
+
+    N, D = tx.shape
+    A = tx.T @ tx + 2*N*lambda_*np.eye(D)
+    b = tx.T @ y
+
+    w = np.linalg.solve(A, b)
+
+    return w, compute_loss(y, tx, w, "mse")
+
+################# Logistic Regression ######################
+
+################# Reg Logistic Regression
