@@ -1,6 +1,8 @@
 from Code.implementations import grad_logistic
 from Code.helpers import batch_iter
 from Code.costs import compute_loss
+from ..plots import cross_validation_visualization
+from helpers import build_k_indices
 
 import numpy as np
 
@@ -69,3 +71,51 @@ def cross_validation_logreg(y, x, k_indices, k, gamma, max_iters, batch_size, la
     # calculate the loss for train and test data
     loss_te = compute_loss(y_te, tx_te, w, "cross_entropy")
     return float(loss_tr), float(loss_te)
+
+def cross_validation_logreg_demo(y, x, k_fold, gammas, max_iters, batch_size, lambda_):
+    """cross validation over regularisation parameter lambda.
+
+    Args:
+        degree: integer, degree of the polynomial expansion
+        k_fold: integer, the number of folds
+        lambdas: shape = (p, ) where p is the number of values of lambda to test
+    Returns:
+        best_lambda : scalar, value of the best lambda
+        best_rmse : scalar, the associated root mean squared error for the best lambda
+    """
+
+
+    print("Unique y values:", np.unique(y))
+    print("x mean, std min/max:", np.mean(x), np.min(np.std(x, axis=0)), np.max(np.std(x, axis=0)))
+
+    seed = 12
+    k_fold = k_fold
+    # split data in k fold
+    k_indices = build_k_indices(y, k_fold, seed)
+    # define lists to store the loss of training data and test data
+    rmse_tr = []
+    rmse_te = []
+    ### SOLUTION
+    # cross validation
+    for gamma in gammas:
+        print("Computing gamma=", gamma, "----------------------------")
+        rmse_tr_tmp = []
+        rmse_te_tmp = []
+        for k in range(k_fold):
+            print("Computing gamma=", gamma, 'fold: ',k, "#######################")
+            loss_tr, loss_te = cross_validation_logreg(y, x, k_indices, k, gamma, max_iters, batch_size, lambda_)
+            diff = abs(loss_tr - loss_te)
+            print(f"Train: {loss_tr:.6f} | Test: {loss_te:.6f} | Absolute Diff: {diff:.6e}")
+            rmse_tr_tmp.append(loss_tr)
+            rmse_te_tmp.append(loss_te)
+        rmse_tr.append(np.mean(rmse_tr_tmp))
+        rmse_te.append(np.mean(rmse_te_tmp))
+    best_gamma, best_rmse = gammas[np.argmin(rmse_te)], np.min(rmse_te)
+ 
+
+    cross_validation_visualization(gammas, rmse_tr, rmse_te)
+    print(
+        "For SGD, the choice of gamma which leads to the best test mse is %.5f with a test mse of %.3f"
+        % (best_gamma, best_rmse)
+    )
+    return best_gamma, best_rmse
