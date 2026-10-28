@@ -30,14 +30,9 @@ def stochastic_logistic_regression_reg(y, tx, initial_w, batch_size, max_iters, 
             # compute a stochastic gradient and loss
             grad = grad_logistic(y_batch, tx_batch, w) + lambda_ * w
             w = w - gamma * grad
+    
+    loss = compute_loss(y, tx, w, "cross_entropy")
 
-            loss = compute_loss(y, tx, w, "cross_entropy")
-            
-        print(
-            "SGD iter. {bi}/{ti}: loss={l}, norm_w ={norm_w}".format(
-                bi=n_iter, ti=max_iters - 1, l=loss, norm_w = np.linalg.norm(w)
-            )
-        )
     return w, loss
 
 def cross_validation_logreg(y, x, k_indices, k, gamma, max_iters, batch_size, lambda_):
