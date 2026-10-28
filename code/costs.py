@@ -13,8 +13,14 @@ def calculate_mae(e):
     """Calculate the mae for vector e."""
     return np.mean(np.abs(e))
 
-def calculate_cross_entropy(y, y_prob):
-    return - np.mean(y * np.log(y_prob) + (1 - y) * np.log(1 - y_prob))
+def calculate_cross_entropy(y, tx, w):
+    """Calculate the cross entropy"""
+    assert y.shape[0] == tx.shape[0]
+    assert tx.shape[1] == w.shape[0]
+    
+    pred = sigmoid(tx.dot(w))
+    loss = y.T.dot(np.log(pred)) + (1 - y).T.dot(np.log(1 - pred))
+    return np.squeeze(-loss).item() * (1 / y.shape[0])
 
 def compute_loss(y, tx, w, lf="mse"):
     """Calculate the loss using either MSE or MAE.
@@ -34,8 +40,7 @@ def compute_loss(y, tx, w, lf="mse"):
     elif lf=="mae":
         return calculate_mae(e)
     elif lf == "cross_entropy":
-        y_prob = sigmoid(tx.dot(w))
-        return calculate_cross_entropy(y, y_prob)
+        return calculate_cross_entropy(y, tx, w)
     else :
         raise ValueError("Loss function should be mse or mae")
 
