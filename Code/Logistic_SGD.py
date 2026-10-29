@@ -1,8 +1,8 @@
 from Code.implementations import grad_logistic
 from Code.helpers import batch_iter
 from Code.costs import compute_loss
-from ..plots import cross_validation_visualization
-from helpers import build_k_indices
+from plots import cross_validation_visualization
+from Code.helpers import build_k_indices
 
 import numpy as np
 
