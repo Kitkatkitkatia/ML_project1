@@ -75,59 +75,11 @@ def cross_validation_logreg_balanced(y, x, k_indices, k, gamma, max_iters, batch
     # validation fold stays still unbalanced
     # tuning threshold
     p = sigmoid(x[te] @ w)
+    p_tr = sigmoid(x[tr] @ w)
     ts = np.linspace(0.05, 0.95, 46)
-    f1s = [f1_score(y[te], (p >= t).astype(int)) for t in ts]
-    i = int(np.argmax(f1s))
+    f1s_train = [f1_score(y[tr], (p_tr >= t).astype(int)) for t in ts]
+    f1s_test = [f1_score(y[te], (p >= t).astype(int)) for t in ts]
+    i = int(np.argmax(f1s_test))
     loss_te = compute_loss(y[te], x[te], w, "cross_entropy")
 
-    return float(loss_tr), float(loss_te), float(f1s[i]), float(ts[i])
-
-
-
-def cross_validation_logreg_demo(y, x, k_fold, gammas, max_iters, batch_size, lambda_):
-    """cross validation over regularisation parameter lambda.
-
-    Args:
-        degree: integer, degree of the polynomial expansion
-        k_fold: integer, the number of folds
-        lambdas: shape = (p, ) where p is the number of values of lambda to test
-    Returns:
-        best_lambda : scalar, value of the best lambda
-        best_rmse : scalar, the associated root mean squared error for the best lambda
-    """
-
-
-    print("Unique y values:", np.unique(y))
-    print("x mean, std min/max:", np.mean(x), np.min(np.std(x, axis=0)), np.max(np.std(x, axis=0)))
-
-    seed = 12
-    k_fold = k_fold
-    # split data in k fold
-    k_indices = build_k_indices(y, k_fold, seed)
-    # define lists to store the loss of training data and test data
-    rmse_tr = []
-    rmse_te = []
-    ### SOLUTION
-    # cross validation
-    for gamma in gammas:
-        print("Computing gamma=", gamma, "----------------------------")
-        rmse_tr_tmp = []
-        rmse_te_tmp = []
-        for k in range(k_fold):
-            print("Computing gamma=", gamma, 'fold: ',k, "#######################")
-            loss_tr, loss_te = cross_validation_logreg(y, x, k_indices, k, gamma, max_iters, batch_size, lambda_)
-            diff = abs(loss_tr - loss_te)
-            print(f"Train: {loss_tr:.6f} | Test: {loss_te:.6f} | Absolute Diff: {diff:.6e}")
-            rmse_tr_tmp.append(loss_tr)
-            rmse_te_tmp.append(loss_te)
-        rmse_tr.append(np.mean(rmse_tr_tmp))
-        rmse_te.append(np.mean(rmse_te_tmp))
-    best_gamma, best_rmse = gammas[np.argmin(rmse_te)], np.min(rmse_te)
- 
-
-    #cross_validation_visualization(gammas, rmse_tr, rmse_te)
-    print(
-        "For SGD, the choice of gamma which leads to the best test mse is %.5f with a test mse of %.3f"
-        % (best_gamma, best_rmse)
-    )
-    return best_gamma, best_rmse
+    return float(loss_tr), float(loss_te), float(f1s_train[i]),float(f1s_test[i]), float(ts[i])
